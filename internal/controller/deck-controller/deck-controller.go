@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nunesyan/agendamento-nails/internal/database"
+	handleerror "github.com/nunesyan/agendamento-nails/internal/pkg/handle-error"
 	deckservice "github.com/nunesyan/agendamento-nails/internal/service/deck-service"
 )
 
@@ -16,40 +17,9 @@ func ListDecks(ctx *gin.Context) {
 
 	result, err := service.ListDecks()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"message": "Ocorreu um erro ao buscar os decks",
-			"error":   err,
-		})
+		handleerror.HandleError(ctx, err)
 		return
 	}
 
 	ctx.JSON(http.StatusOK, result)
-}
-
-// Create controller
-func CreateOpening(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"msg": "POST Opening",
-	})
-}
-
-// Delete controller
-func DeleteOpening(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"msg": "DELETE Opening",
-	})
-}
-
-// Update controller
-func UpdateOpening(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"msg": "PUT Opening",
-	})
-}
-
-// Show all controllers
-func ShowAllOpening(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"msg": "GET Openings",
-	})
 }

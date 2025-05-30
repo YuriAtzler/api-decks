@@ -2,8 +2,10 @@ package deckservice
 
 import (
 	"encoding/json"
+	"net/http"
 
 	deckmodel "github.com/nunesyan/agendamento-nails/internal/model/deck-model"
+	handleerror "github.com/nunesyan/agendamento-nails/internal/pkg/handle-error"
 	"gorm.io/gorm"
 )
 
@@ -16,7 +18,7 @@ func NewDeckService(db *gorm.DB) *deckService {
 	return &deckService{db}
 }
 
-func (s *deckService) ListDecks() ([]deckmodel.ListDeck, error) {
+func (s *deckService) ListDecks() ([]deckmodel.ListDeck, *handleerror.HandleErrorModel) {
 	var (
 		response []byte
 		result   []deckmodel.ListDeck
@@ -33,11 +35,19 @@ func (s *deckService) ListDecks() ([]deckmodel.ListDeck, error) {
 	`
 
 	if err := s.db.Raw(query).Row().Scan(&response); err != nil {
-		return result, err
+		return result, &handleerror.HandleErrorModel{
+			Status:  http.StatusInternalServerError,
+			Message: "Ocorreu um erro ao fazer a consulta no decks",
+			Error:   err,
+		}
 	}
 
 	if err := json.Unmarshal(response, &result); err != nil {
-		return nil, err
+		return nil, &handleerror.HandleErrorModel{
+			Status:  http.StatusInternalServerError,
+			Message: "Ocorreu um erro ao realizar o parse dos decks",
+			Error:   err,
+		}
 	}
 
 	return result, nil
