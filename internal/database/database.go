@@ -1,18 +1,33 @@
 package database
 
 import (
-	"database/sql"
-
+	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func Connect() (*sql.DB, error) {
-	connStr := "postgresql://postgres.jikbbfhsraztwuxdyyaf:tAWGlzDJl14jAXav@aws-0-sa-east-1.pooler.supabase.com:6543/postgres"
+var db *gorm.DB
 
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return db, err
+func CallDatabase(ctx *gin.Context) *gorm.DB {
+	if db == nil {
+		stringConection := "postgresql://postgres.icgzbdzjeouftniexhku:myNbu8-xyxsyn-votnor@aws-0-sa-east-1.pooler.supabase.com:6543/postgres"
+		var err error
+		db, err = gorm.Open(postgres.Open(stringConection), &gorm.Config{})
+		if err != nil {
+			panic("failed to connect database")
+		}
 	}
+	return db
+}
 
-	return db, nil
+func CloseDatabase() error {
+	if db != nil {
+		sqlDB, err := db.DB()
+		if err != nil {
+			return err
+		}
+		return sqlDB.Close()
+	}
+	return nil
 }
