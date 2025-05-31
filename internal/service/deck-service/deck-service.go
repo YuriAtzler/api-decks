@@ -37,7 +37,7 @@ func (s *deckService) ListDecks() ([]deckmodel.ListDeck, *handleerror.HandleErro
 	if err := s.db.Raw(query).Row().Scan(&response); err != nil {
 		return result, &handleerror.HandleErrorModel{
 			Status:  http.StatusInternalServerError,
-			Message: "Ocorreu um erro ao fazer a consulta no decks",
+			Message: "Failed to execute query",
 			Error:   err,
 		}
 	}
@@ -45,10 +45,26 @@ func (s *deckService) ListDecks() ([]deckmodel.ListDeck, *handleerror.HandleErro
 	if err := json.Unmarshal(response, &result); err != nil {
 		return nil, &handleerror.HandleErrorModel{
 			Status:  http.StatusInternalServerError,
-			Message: "Ocorreu um erro ao realizar o parse dos decks",
+			Message: "Failed to parse response",
 			Error:   err,
 		}
 	}
 
 	return result, nil
+}
+
+func (s *deckService) CreateDeck(deck deckmodel.CreateDeck) (int, *handleerror.HandleErrorModel) {
+	var deckId int
+
+	query := `INSERT INTO tb_deck (name) VALUES ($1) RETURNING id;`
+
+	if err := s.db.Raw(query, deck.Name).Row().Scan(&deckId); err != nil {
+		return deckId, &handleerror.HandleErrorModel{
+			Status:  http.StatusInternalServerError,
+			Message: "Failed to execute query",
+			Error:   err,
+		}
+	}
+
+	return deckId, nil
 }
